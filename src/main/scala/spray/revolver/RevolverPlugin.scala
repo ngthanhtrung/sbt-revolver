@@ -73,17 +73,23 @@ object RevolverPlugin extends AutoPlugin {
       },
 
       // bundles the various parameters for forking
-      reForkOptions <<= (taskTemporaryDirectory, baseDirectory in reStart, javaOptions in reStart, outputStrategy,
-        javaHome) map ( (tmp, base, jvmOptions, strategy, javaHomeDir) =>
+      reForkOptions <<= (
+        baseDirectory in reStart,
+        javaOptions in reStart,
+        outputStrategy,
+        javaHome,
+        envVars in reStart
+      ) map { (base, jvmOptions, strategy, javaHomeDir, env) =>
         ForkOptions(
           javaHomeDir,
           strategy,
           Nil, // bootJars is empty by default because only jars on the user's classpath should be on the boot classpath
           workingDirectory = Some(base),
           runJVMOptions = jvmOptions,
-          connectInput = false
+          connectInput = false,
+          envVars = env
         )
-      ),
+      },
 
       // stop a possibly running application if the project is reloaded and the state is reset
       onUnload in Global ~= { onUnload => state =>
